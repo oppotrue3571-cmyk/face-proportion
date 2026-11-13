@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f3eee4">
+<title>สัดส่วนใบหน้า</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f3eee4; --ink:#1d1b18; --mut:#6f685d; --rule:#d8d0bf;
+  --acc:#3d6a4e; --band:rgba(61,106,78,.2); --warn:#a4452c;
+}
+@media(prefers-color-scheme:dark){:root{
+  --paper:#161412; --ink:#ece6da; --mut:#a39b8c; --rule:#34302a;
+  --acc:#8fc0a0; --band:rgba(143,192,160,.22); --warn:#e08a6f;
+}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font:15px/1.6 "IBM Plex Sans Thai","Noto Sans Thai",system-ui,-apple-system,Tahoma,sans-serif;
+  font-variant-numeric:tabular-nums}
+.page{max-width:520px;margin:0 auto;padding:0 18px calc(48px + env(safe-area-inset-bottom))}
+header{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:calc(16px + env(safe-area-inset-top)) 0 10px;border-bottom:1px solid var(--rule)}
+h1{font-size:17px;font-weight:600;margin:0;letter-spacing:.01em}
+.tag{font-size:12px;color:var(--mut)}
+
+.view{position:relative;margin-top:14px;background:#121110;border-radius:3px;overflow:hidden}
+#cam{display:block;width:100%;height:auto;min-height:260px;max-height:68vh;object-fit:contain;transform:scaleX(-1);background:#121110}
+.view.done #cam{max-height:46vh}
+#shot{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#121110}
+.oval{position:absolute;left:25%;right:25%;top:9%;bottom:12%;border:1px solid rgba(255,255,255,.5);border-radius:50%;pointer-events:none}
+.scanui{position:absolute;left:14px;bottom:14px;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.6);pointer-events:none;display:flex;align-items:baseline;gap:8px}
+.scanui b{font-size:38px;font-weight:500;line-height:1;min-width:2ch;text-align:right}
+.scanui small{font-size:14px}
+.scanui em{font-style:normal;font-size:12px;opacity:.85;margin-left:6px}
+.bar{position:absolute;left:0;right:0;bottom:0;height:2px;background:rgba(255,255,255,.2)}
+.bar i{display:block;height:100%;width:0;background:#bfe3c9}
+
+.status{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;min-height:26px;margin:12px 0 0;font-size:13px;color:var(--mut)}
+.status.err{color:var(--warn)}
+.link{font:inherit;font-size:13px;color:var(--acc);background:none;border:0;padding:0;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+
+.ctl{display:flex;flex-direction:column;align-items:center;gap:8px;margin:14px 0 6px}
+.shutter{width:74px;height:74px;border-radius:50%;border:2px solid var(--ink);background:none;padding:5px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.shutter i{display:block;width:100%;height:100%;border-radius:50%;background:var(--ink);transition:transform .12s}
+.shutter:active:not(:disabled) i{transform:scale(.86)}
+.shutter:disabled{opacity:.28;cursor:default}
+.ctl span{font-size:12px;color:var(--mut)}
+.again{font:inherit;font-weight:500;font-size:15px;color:var(--ink);background:none;border:1px solid var(--ink);border-radius:999px;padding:9px 26px;cursor:pointer}
+.again:active{background:var(--ink);color:var(--paper)}
+
+.hair{margin-top:12px;padding-top:12px;border-top:1px solid var(--rule)}
+.hair label{display:flex;justify-content:space-between;font-size:13px;font-weight:500}
+.hair label span{font-weight:400;color:var(--mut)}
+.hair input{width:100%;margin:8px 0 2px;accent-color:var(--acc)}
+.q{font-size:12px;color:var(--mut);margin:6px 0 0}
+
+.sec{margin-top:26px}
+.sec h2{display:flex;align-items:baseline;gap:10px;font-size:14px;font-weight:600;margin:0 0 4px;padding-bottom:6px;border-bottom:1px solid var(--ink)}
+.sec h2 i{font-style:normal;font-weight:400;font-size:12px;color:var(--mut)}
+.m{padding:9px 0 4px;border-bottom:1px solid var(--rule)}
+.mh{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:14px}
+.ml{color:var(--ink)}
+.mv{white-space:nowrap}
+.mv b{font-weight:600;font-size:16px}
+.mv .dl{display:inline-block;min-width:4.2ch;margin-left:8px;text-align:right;font-size:12px;color:var(--mut)}
+.mv .dl.out{color:var(--ink);font-weight:500}
+.sc{position:relative;height:14px;margin-top:2px}
+.sc::before{content:"";position:absolute;left:0;right:0;top:6px;height:1px;background:var(--mut);opacity:.55}
+.sc .bd{position:absolute;top:3px;height:8px;background:var(--band)}
+.sc .mk{position:absolute;top:2px;width:10px;height:10px;margin-left:-5px;border-radius:50%;background:var(--paper);border:2px solid var(--ink)}
+.sc .mk.ok{background:var(--acc);border-color:var(--acc)}
+.note{font-size:12px;color:var(--mut);margin:8px 0 0}
+.note b{color:var(--ink);font-weight:500}
+.warn{margin:14px 0 0;padding:2px 0 2px 12px;border-left:2px solid var(--warn);font-size:13px;color:var(--warn)}
+.foot{margin-top:34px;padding-top:12px;border-top:1px solid var(--rule);font-size:12px;color:var(--mut)}
+.foot p{margin:0 0 6px}
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <h1>สัดส่วนใบหน้า</h1>
+    <span class="tag">ประมวลผลในเครื่อง ไม่อัปโหลดรูป</span>
+  </header>
+
+  <div class="view" id="view">
+    <video id="cam" playsinline muted autoplay></video>
+    <canvas id="shot" hidden></canvas>
+    <div class="oval" id="oval"></div>
+    <div class="scanui" id="scanui" hidden><b id="cnt">0</b><small>%</small><em>นิ่งไว้ กำลังวิเคราะห์</em></div>
+    <div class="bar" id="bar" hidden><i id="barfill"></i></div>
+  </div>
+
+  <p class="status" id="status" role="status"></p>
+
+  <div class="ctl" id="ctl">
+    <button class="shutter" id="shutter" disabled aria-label="ถ่ายภาพ"><i></i></button>
+    <span id="ctlHint">ถ่ายภาพ</span>
+  </div>
+  <div class="ctl" id="ctlAgain" hidden>
+    <button class="again" id="again">ถ่ายใหม่</button>
+  </div>
+
+  <div class="hair" id="hairBox" hidden>
+    <label for="hair">ไรผม <span>เลื่อนจนเส้นสีเขียวอ่อนอยู่ที่ไรผมของคุณ</span></label>
+    <input type="range" id="hair" min="0" max="0.45" step="0.005" value="0.16">
+    <p class="q" id="quality"></p>
+  </div>
+
+  <div id="out"></div>
+
+  <div class="foot">
+    <p>วัดเรขาคณิตของจุดบนภาพเท่านั้น ไม่ใช่คะแนนความสวยและไม่ใช่การวินิจฉัยทางการแพทย์ ค่าอ้างอิงเป็นค่าเฉลี่ยเชิงแนวคิด ใบหน้าจริงเบี่ยงเบนได้ตามปกติ</p>
+    <p>ใช้ MediaPipe Face Landmarker · ภาพไม่ถูกเก็บและไม่ถูกส่งออกจากเครื่อง</p>
+  </div>
+</div>
+
+<script type="module">
+const MP   = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs";
+const WASM = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm";
+const MODEL = "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task";
+
+const f1 = n => Number.isFinite(n) ? n.toFixed(1) : '—';
+const sg = (n, d = 1) => Number.isFinite(n) ? (n > 0.049 ? '+' : n < -0.049 ? '−' : '') + Math.abs(n).toFixed(d) : '—';
+
+// <measure>
+const KEYS = ['tr','gl','sn','me','zr','zl','eRo','eRi','eLi','eLo'];
+const PAIRS = [
+  ['หางตา','eRo','eLo'], ['หัวตา','eRi','eLi'], ['คิ้วกลาง',105,334],
+  ['ปีกจมูก',129,358], ['มุมปาก',61,291], ['มุมกราม',172,397], ['ขอบแก้ม','zr','zl']
+];
+// hair: ระยะยกจุดบนสุดขึ้นไปที่ไรผม เป็นสัดส่วนของความกว้างหน้า
+function measure(lm, W, H, hair = 0) {
+  const raw = i => ({ x: lm[i].x * W, y: lm[i].y * H });
+  const avg = (...a) => ({ x: a.reduce((s, p) => s + p.x, 0) / a.length, y: a.reduce((s, p) => s + p.y, 0) / a.length });
+  const N = {
+    tr: raw(10), gl: avg(raw(107), raw(336), raw(55), raw(285)), sn: raw(2), me: raw(152),
+    zr: raw(234), zl: raw(454), eRo: raw(33), eRi: raw(133), eLi: raw(362), eLo: raw(263)
+  };
+  const get = k => typeof k === 'string' ? N[k] : raw(k);
+
+  const dx = N.eLo.x - N.eRo.x, dy = N.eLo.y - N.eRo.y, len = Math.hypot(dx, dy) || 1;
+  const U = { x: dx / len, y: dy / len }, V = { x: -U.y, y: U.x };
+  const O = avg(N.eRi, N.eLi);
+  const u = p => (p.x - O.x) * U.x + (p.y - O.y) * U.y;
+  const v = p => (p.x - O.x) * V.x + (p.y - O.y) * V.y;
+  const toImg = (a, b) => ({ x: O.x + a * U.x + b * V.x, y: O.y + a * U.y + b * V.y });
+
+  const Wf = u(N.zl) - u(N.zr);
+  N.tr = { x: N.tr.x - V.x * hair * Wf, y: N.tr.y - V.y * hair * Wf };
+
+  const vt = [v(N.tr), v(N.gl), v(N.sn), v(N.me)];
+  const th = [vt[1] - vt[0], vt[2] - vt[1], vt[3] - vt[2]];
+  const thT = th[0] + th[1] + th[2];
+  const thOk = th.every(x => x > 0);
+  const thP = th.map(x => x / thT * 100);
+
+  const ub = [u(N.zr), u(N.eRo), u(N.eRi), u(N.eLi), u(N.eLo), u(N.zl)];
+  const fi = [];
+  for (let i = 0; i < 5; i++) fi.push(ub[i + 1] - ub[i]);
+  const fiOk = Wf > 0 && fi.every(x => x > 0);
+  const fiP = fi.map(x => x / Wf * 100);
+  const eyeW = (fi[1] + fi[3]) / 2, icd = fi[2];
+  const eyeRatio = icd / eyeW;
+
+  const Hface = vt[3] - vt[0];
+  const ratioHW = Hface / Wf;
+  const faceIndex = (vt[3] - v(raw(168))) / Wf * 100;
+
+  const sym = PAIRS.map(([name, a, b]) => {
+    const pa = get(a), pb = get(b);
+    const dR = -u(pa), dL = u(pb), mean = (dR + dL) / 2;
+    const h = mean > 0 ? (dL - dR) / mean * 100 : NaN;
+    const vv = (v(pb) - v(pa)) / Wf * 100;
+    return { name, h, vv };
+  });
+  const hs = sym.map(s => Math.abs(s.h)).filter(Number.isFinite);
+  const vs = sym.map(s => Math.abs(s.vv)).filter(Number.isFinite);
+  const meanH = hs.length ? hs.reduce((a, b) => a + b, 0) / hs.length : NaN;
+  const meanV = vs.length ? vs.reduce((a, b) => a + b, 0) / vs.length : NaN;
+  const noseOff = u(N.sn) / Wf * 100, chinOff = u(N.me) / Wf * 100;
+
+  const nose = u(raw(1));
+  const yl = u(N.zl) - nose, yr = nose - u(N.zr);
+  const yaw = Math.min(yl, yr) / Math.max(yl, yr);
+  const roll = Math.atan2(dy, dx) * 180 / Math.PI;
+
+  return { N, U, V, O, u, v, toImg, Wf, vt, th, thP, thOk, ub, fi, fiP, fiOk, eyeRatio,
+           Hface, ratioHW, faceIndex, sym, meanH, meanV, noseOff, chinOff, yaw, roll };
+}
+// </measure>
+
+// ---------- elements / state ----------
+const $ = s => document.querySelector(s);
+const cam = $('#cam'), shot = $('#shot'), sctx = shot.getContext('2d');
+const view = $('#view'), oval = $('#oval'), out = $('#out');
+const shutter = $('#shutter'), again = $('#again');
+const still = document.createElement('canvas'), stx = still.getContext('2d');
+const det = document.createElement('canvas'), dtx = det.getContext('2d');
+
+const state = { mode: 'boot', lm: null, frames: [], W: 0, H: 0, hair: 0.16 };
+let landmarker = null, stream = null;
+
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const raf = () => new Promise(r => requestAnimationFrame(r));
+const withTimeout = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
+
+function setStatus(text, opts = {}) {
+  const el = $('#status');
+  el.className = 'status' + (opts.err ? ' err' : '');
+  el.textContent = text;
+  if (opts.retry) {
+    const b = document.createElement('button');
+    b.className = 'link'; b.textContent = 'ลองใหม่'; b.onclick = opts.retry;
+    el.appendChild(b);
+  }
+}
+
+// ---------- model & camera ----------
+async function loadModel() {
+  if (landmarker) return;
+  const mp = await import(MP);
+  const fileset = await mp.FilesetResolver.forVisionTasks(WASM);
+  const make = delegate => mp.FaceLandmarker.createFromOptions(fileset, {
+    baseOptions: { modelAssetPath: MODEL, delegate }, runningMode: 'IMAGE', numFaces: 1
+  });
+  try { landmarker = await make('GPU'); } catch (e) { landmarker = await make('CPU'); }
+}
+function stopStream() {
+  if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+  cam.srcObject = null;
+}
+async function startCamera() {
+  stopStream();
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    const e = new Error('no-media'); e.name = 'NoMedia'; throw e;
+  }
+  stream = await navigator.mediaDevices.getUserMedia({
+    video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 960 } }, audio: false
+  });
+  cam.srcObject = stream;
+  await cam.play();
+  if (!cam.videoWidth) await new Promise(r => cam.addEventListener('loadedmetadata', r, { once: true }));
+}
+function camMessage(e) {
+  switch (e && e.name) {
+    case 'NotAllowedError': case 'SecurityError':
+      return 'ยังไม่ได้อนุญาตให้ใช้กล้อง เปิดสิทธิ์ที่ ตั้งค่า > Safari > กล้อง (iPhone) หรือไอคอนข้างช่องที่อยู่เว็บ แล้วกดลองใหม่';
+    case 'NotFoundError': case 'OverconstrainedError':
+      return 'ไม่พบกล้องในอุปกรณ์นี้';
+    case 'NotReadableError': case 'AbortError':
+      return 'กล้องถูกแอปอื่นใช้อยู่ ปิดแอปนั้นแล้วลองใหม่';
+    case 'NoMedia':
+      return 'เบราว์เซอร์นี้ใช้กล้องไม่ได้ หน้านี้ต้องเปิดผ่าน https';
+    default:
+      return 'เปิดกล้องไม่สำเร็จ ลองใหม่อีกครั้ง';
+  }
+}
+
+async function boot() {
+  state.mode = 'boot';
+  shutter.disabled = true;
+  setStatus('กำลังเตรียมกล้องและโมเดล…');
+  const [m, c] = await Promise.allSettled([withTimeout(loadModel(), 40000), startCamera()]);
+  if (m.status === 'rejected') {
+    console.error(m.reason);
+    setStatus('โหลดโมเดลไม่สำเร็จ ตรวจสอบอินเทอร์เน็ตก่อน', { err: true, retry: boot });
+    return;
+  }
+  if (c.status === 'rejected') {
+    console.error(c.reason);
+    setStatus(camMessage(c.reason), { err: true, retry: boot });
+    return;
+  }
+  try { det.width = 64; det.height = 64; landmarker.detect(det); } catch (e) { /* warm-up only */ }
+  ready();
+}
+function ready() {
+  state.mode = 'live';
+  shutter.disabled = false;
+  setStatus('จัดหน้าให้อยู่ในวงรี มองตรง แล้วกดถ่าย');
+}
+
+// ---------- capture ----------
+function grab() {
+  const w = cam.videoWidth, h = cam.videoHeight;
+  const dw = Math.min(640, w), dh = Math.round(h * dw / w);
+  det.width = dw; det.height = dh;
+  dtx.setTransform(-1, 0, 0, 1, dw, 0);
+  dtx.drawImage(cam, 0, 0, dw, dh);
+  dtx.setTransform(1, 0, 0, 1, 0, 0);
+  const r = landmarker.detect(det);
+  return r.faceLandmarks[0] || null;
+}
+function pxScale() {
+  const r = shot.getBoundingClientRect();
+  const s = Math.min(r.width / state.W, r.height / state.H);
+  return s > 0 ? 1 / s : 1;
+}
+const ease = p => p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+
+function drawScan(p, lm) {
+  const W = state.W, H = state.H, k = pxScale();
+  sctx.drawImage(still, 0, 0);
+  sctx.fillStyle = 'rgba(0,0,0,.2)'; sctx.fillRect(0, 0, W, H);
+  const y = ease(p) * H;
+  if (lm) {
+    sctx.fillStyle = 'rgba(255,255,255,.92)';
+    const r = 1.3 * k;
+    for (const q of lm) {
+      const py = q.y * H;
+      if (py > y) continue;
+      sctx.beginPath(); sctx.arc(q.x * W, py, r, 0, 6.2832); sctx.fill();
+    }
+  }
+  const g = sctx.createLinearGradient(0, y - H * 0.16, 0, y);
+  g.addColorStop(0, 'rgba(191,227,201,0)'); g.addColorStop(1, 'rgba(191,227,201,.28)');
+  sctx.fillStyle = g; sctx.fillRect(0, y - H * 0.16, W, H * 0.16);
+  sctx.fillStyle = '#bfe3c9'; sctx.fillRect(0, y - k * 0.75, W, k * 1.5);
+}
+
+function median(a) {
+  const s = a.slice().sort((x, y) => x - y), n = s.length;
+  return n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2;
+}
+function medianLm(fr) {
+  const n = fr[0].length, o = new Array(n);
+  for (let i = 0; i < n; i++) o[i] = { x: median(fr.map(f => f[i].x)), y: median(fr.map(f => f[i].y)) };
+  return o;
+}
+
+async function capture() {
+  if (state.mode !== 'live' || !cam.videoWidth) return;
+  state.mode = 'scan';
+  const W = cam.videoWidth, H = cam.videoHeight;
+  state.W = W; state.H = H;
+  still.width = shot.width = W; still.height = shot.height = H;
+  stx.setTransform(-1, 0, 0, 1, W, 0); stx.drawImage(cam, 0, 0, W, H); stx.setTransform(1, 0, 0, 1, 0, 0);
+  sctx.drawImage(still, 0, 0);
+  shot.hidden = false; oval.hidden = true;
+  $('#ctl').hidden = true;
+  $('#scanui').hidden = false; $('#bar').hidden = false;
+  setStatus('');
+
+  const DUR = 1800, NF = 8, STEP = DUR * 0.75 / NF;
+  const frames = []; let attempts = 0, first = null;
+  const t0 = performance.now();
+  while (true) {
+    const el = performance.now() - t0;
+    const p = Math.min(1, el / DUR);
+    const want = Math.min(NF, Math.floor(el / STEP) + 1);
+    if (attempts < want) {
+      attempts++;
+      try { const lm = grab(); if (lm) { frames.push(lm); if (!first) first = lm; } }
+      catch (e) { console.error(e); }
+    }
+    drawScan(p, first);
+    $('#cnt').textContent = Math.round(ease(p) * 100);
+    $('#barfill').style.width = (ease(p) * 100) + '%';
+    if ((p >= 1 && attempts >= NF) || el > DUR * 3) break;
+    await raf();
+  }
+  $('#cnt').textContent = '100'; $('#barfill').style.width = '100%';
+  await sleep(120);
+
+  $('#scanui').hidden = true; $('#bar').hidden = true;
+  cam.pause(); stopStream();
+  view.classList.add('done');
+  $('#ctlAgain').hidden = false;
+  window.scrollTo({ top: 0 });
+  state.mode = 'result';
+
+  if (frames.length < 4) {
+    sctx.drawImage(still, 0, 0);
+    out.innerHTML = `<p class="warn">จับใบหน้าได้ไม่พอ (${frames.length} จาก ${NF} เฟรม) ถ่ายใหม่โดยให้เห็นหน้าตรง ชัด และแสงพอ</p>`;
+    $('#hairBox').hidden = true;
+    return;
+  }
+  state.frames = frames;
+  state.lm = medianLm(frames);
+  $('#hairBox').hidden = false;
+  await revealGuides();
+  renderResults();
+}
+
+again.onclick = async () => {
+  again.disabled = true;
+  $('#ctlAgain').hidden = true;
+  $('#hairBox').hidden = true;
+  out.innerHTML = '';
+  view.classList.remove('done');
+  shot.hidden = true; oval.hidden = false;
+  $('#ctl').hidden = false;
+  shutter.disabled = true;
+  setStatus('กำลังเปิดกล้อง…');
+  try { await startCamera(); ready(); }
+  catch (e) { console.error(e); setStatus(camMessage(e), { err: true, retry: again.onclick }); }
+  again.disabled = false;
+};
+shutter.onclick = capture;
+
+// ---------- guides ----------
+function drawGuides(M, t) {
+  const k = pxScale(), lw = 1.25 * k;
+  const line = (a, b, col, dash, alpha) => {
+    sctx.save(); sctx.lineCap = 'round'; sctx.setLineDash(dash || []);
+    sctx.globalAlpha = alpha == null ? 1 : alpha;
+    sctx.lineWidth = lw + 1.6 * k; sctx.strokeStyle = 'rgba(0,0,0,.35)';
+    sctx.beginPath(); sctx.moveTo(a.x, a.y); sctx.lineTo(b.x, b.y); sctx.stroke();
+    sctx.lineWidth = lw; sctx.strokeStyle = col; sctx.stroke(); sctx.restore();
+  };
+  const { toImg, ub, vt, Wf } = M, pad = 0.1 * Wf;
+  const cu = (ub[0] + ub[5]) / 2, half = (ub[5] - ub[0]) / 2 + pad;
+  const WHITE = '#ffffff', MINT = '#bfe3c9';
+  line(toImg(0, vt[0] - 0.05 * Wf), toImg(0, vt[0] - 0.05 * Wf + (vt[3] - vt[0] + 0.1 * Wf) * t), WHITE, [2 * k, 5 * k], .6);
+  for (const x of ub) line(toImg(x, vt[0]), toImg(x, vt[0] + (vt[3] - vt[0]) * t), WHITE, [6 * k, 5 * k], .7);
+  vt.forEach((y, i) => line(toImg(cu - half * t, y), toImg(cu + half * t, y), i === 0 ? MINT : WHITE, null, 1));
+  if (t >= 1) {
+    for (const y of vt) {
+      const p = toImg(0, y);
+      sctx.beginPath(); sctx.arc(p.x, p.y, 3.2 * k, 0, 6.2832);
+      sctx.fillStyle = '#fff'; sctx.fill(); sctx.lineWidth = 1 * k; sctx.strokeStyle = 'rgba(0,0,0,.5)'; sctx.stroke();
+    }
+  }
+}
+function redraw(t = 1) {
+  sctx.drawImage(still, 0, 0);
+  const M = measure(state.lm, state.W, state.H, state.hair);
+  if (M.thOk && M.fiOk) drawGuides(M, t);
+  return M;
+}
+async function revealGuides() {
+  const D = 700, t0 = performance.now();
+  while (true) {
+    const t = Math.min(1, (performance.now() - t0) / D);
+    redraw(1 - Math.pow(1 - t, 3));
+    if (t >= 1) break;
+    await raf();
+  }
+}
+$('#hair').addEventListener('input', e => {
+  if (state.mode !== 'result' || !state.lm) return;
+  state.hair = +e.target.value;
+  redraw(1); renderResults();
+});
+
+// ---------- results ----------
+function sd(a) {
+  a = a.filter(Number.isFinite);
+  if (a.length < 2) return 0;
+  const m = a.reduce((s, x) => s + x, 0) / a.length;
+  return Math.sqrt(a.reduce((s, x) => s + (x - m) * (x - m), 0) / (a.length - 1));
+}
+function row(label, val, o) {
+  const clamp = x => Math.max(0, Math.min(100, (x - o.lo) / (o.hi - o.lo) * 100));
+  const dec = o.dec == null ? 1 : o.dec;
+  if (!Number.isFinite(val)) return `<div class="m"><div class="mh"><span class="ml">${label}</span><span class="mv"><b>—</b></span></div></div>`;
+  const ok = val >= o.r0 && val <= o.r1;
+  const ref = (o.r0 + o.r1) / 2;
+  const txt = o.signed ? sg(val, dec) : val.toFixed(dec);
+  const dl = o.noDelta ? '' : `<span class="dl${ok ? '' : ' out'}">${ok ? '' : sg(val - ref, dec)}</span>`;
+  return `<div class="m"><div class="mh"><span class="ml">${label}</span><span class="mv"><b>${txt}</b>${o.unit || ''}${dl}</span></div>` +
+    `<div class="sc"><i class="bd" style="left:${clamp(o.r0)}%;width:${clamp(o.r1) - clamp(o.r0)}%"></i><i class="mk${ok ? ' ok' : ''}" style="left:${clamp(val)}%"></i></div></div>`;
+}
+const sec = (n, title, body, note) =>
+  `<section class="sec"><h2><i>${n}</i>${title}</h2>${body}${note ? `<p class="note">${note}</p>` : ''}</section>`;
+
+function renderResults() {
+  const M = measure(state.lm, state.W, state.H, state.hair);
+  let h = '';
+  if (M.yaw < 0.85) h += `<p class="warn">ใบหน้าหันเฉียง ค่าสมมาตรและห้าส่วนอาจเพี้ยน ลองถ่ายหน้าตรงใหม่</p>`;
+
+  const T = { lo: 20, hi: 50, r0: 30.3, r1: 36.3, unit: '%' };
+  h += sec('01', 'สามส่วนแนวตั้ง', M.thOk
+    ? row('บน · ไรผม–คิ้ว', M.thP[0], T) + row('กลาง · คิ้ว–ฐานจมูก', M.thP[1], T) + row('ล่าง · ฐานจมูก–คาง', M.thP[2], T)
+    : '<p class="warn">คำนวณไม่ได้ ลองเลื่อนไรผมหรือถ่ายใหม่</p>',
+    'อ้างอิง 33.3% ต่อส่วน แถบเขียวคือช่วง ±3 · ส่วนบนขึ้นกับตำแหน่งไรผมที่คุณเลื่อน');
+
+  const F = { lo: 5, hi: 35, r0: 17, r1: 23, unit: '%' };
+  h += sec('02', 'ห้าส่วนแนวนอน', M.fiOk
+    ? row('ขอบแก้ม–หางตา (ซ้ายของภาพ)', M.fiP[0], F) + row('ตา (ซ้ายของภาพ)', M.fiP[1], F) +
+      row('ระหว่างตา', M.fiP[2], F) + row('ตา (ขวาของภาพ)', M.fiP[3], F) +
+      row('หางตา–ขอบแก้ม (ขวาของภาพ)', M.fiP[4], F) +
+      row('ระหว่างตา ÷ ความกว้างตา', M.eyeRatio, { lo: .6, hi: 1.6, r0: .9, r1: 1.1, dec: 2 })
+    : '<p class="warn">คำนวณไม่ได้ ลองถ่ายใหม่</p>',
+    'อ้างอิง 20% ต่อส่วน · ใช้ขอบแก้มแทนหู ส่วนนอกสองข้างจึงมักต่ำกว่า 20%');
+
+  const cls = M.faceIndex < 84 ? 'หน้ากว้าง' : M.faceIndex <= 88 ? 'ขนาดกลาง' : 'หน้ายาว';
+  h += sec('03', 'สัดส่วนใบหน้',
+    row('ดัชนีใบหน้า', M.faceIndex, { lo: 70, hi: 120, r0: 84, r1: 88 }) +
+    row('สูง ÷ กว้าง', M.ratioHW, { lo: 1, hi: 1.9, r0: 1.568, r1: 1.668, dec: 2 }),
+    `ดัชนี = หัวคิ้ว–คาง ÷ กว้าง × 100 · ช่วงกลางทางคลินิก 84–88 · ผลนี้ <b>${cls}</b> · 1.618 เป็นแค่ค่าอ้างอิงยอดนิยม`);
+
+  const S = { lo: 0, hi: 12, r0: 0, r1: 2, unit: '%' };
+  const O = { lo: -10, hi: 10, r0: -2, r1: 2, unit: '%', signed: true, noDelta: true };
+  h += sec('04', 'ความสมมาตร',
+    row('ระยะจากเส้นกลาง ต่างเฉลี่ย', M.meanH, S) + row('ระดับสูง–ต่ำ ต่างเฉลี่ย', M.meanV, S) +
+    row('จมูกเบี่ยงจากเส้นกลางตา', M.noseOff, O) + row('คางเบี่ยงจากเส้นกลางตา', M.chinOff, O),
+    'ค่า + คือเบี่ยงไปทางขวาของภาพ · ทุกใบหน้าไม่สมมาตรสมบูรณ์ ต่างกันไม่กี่ % เป็นเรื่องปกติ');
+
+  out.innerHTML = h;
+
+  const sp = Math.max(...[0, 1, 2].map(i => sd(state.frames.map(l => measure(l, state.W, state.H, state.hair).thP[i]))));
+  const word = sp <= 1 ? 'นิ่งดี' : sp <= 2.5 ? 'พอใช้' : 'แกว่งมาก ลองถ่ายใหม่ให้นิ่งกว่านี้';
+  $('#quality').textContent = `ค่ากลางจาก ${state.frames.length} เฟรม · ผันผวน ±${sp.toFixed(1)} จุด % · ${word}`;
+}
+
+// ---------- lifecycle ----------
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    if (state.mode === 'live') { stopStream(); shutter.disabled = true; setStatus('กล้องหยุดชั่วคราว'); }
+  } else if (state.mode === 'live' && !stream) {
+    setStatus('กำลังเปิดกล้อง…');
+    startCamera().then(ready).catch(e => { console.error(e); setStatus(camMessage(e), { err: true, retry: boot }); });
+  }
+});
+
+boot();
+</script>
+</body>
+</html>
